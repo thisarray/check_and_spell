@@ -304,6 +304,17 @@ function numericToText(amount) {
   return result.join(' ');
 }
 
+function padNumber(value) {
+  if (typeof value !== 'number') {
+    throw new TypeError('value must be a positive number.');
+  }
+
+  if (value < 10) {
+    return '0' + value;
+  }
+  return value.toFixed(0);
+}
+
 /*
  * Unit tests
  */
@@ -411,6 +422,42 @@ function test() {
                      {msg: 'numericToText() failed.'});
     }
   }
+
+  for (let [value, expected] of [
+    [1, '01'],
+    [2, '02'],
+    [3, '03'],
+    [4, '04'],
+    [5, '05'],
+    [6, '06'],
+    [7, '07'],
+    [8, '08'],
+    [9, '09'],
+    [10, '10'],
+    [11, '11'],
+    [12, '12'],
+    [13, '13'],
+    [14, '14'],
+    [15, '15'],
+    [16, '16'],
+    [17, '17'],
+    [18, '18'],
+    [19, '19'],
+    [20, '20'],
+    [21, '21'],
+    [22, '22'],
+    [23, '23'],
+    [24, '24'],
+    [25, '25'],
+    [26, '26'],
+    [27, '27'],
+    [28, '28'],
+    [29, '29'],
+    [30, '30'],
+    [31, '31']]) {
+    console.assert(padNumber(value) === expected,
+                   {msg: 'padNumber() failed.'});
+  }
 }
 test();
 
@@ -433,6 +480,7 @@ form.addEventListener('submit', (event) => {
 const date = document.querySelector('time');
 let today = new Date();
 date.textContent = `${ MONTHS[today.getMonth()] } ${ today.getDate() }, ${ today.getFullYear() }`;
+date.setAttribute('datetime', `${ today.getFullYear() }-${ padNumber(today.getMonth() + 1) }-${ padNumber(today.getDate()) }`);
 </script>
 </body>
 
