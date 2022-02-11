@@ -10,9 +10,71 @@ body {
   background-color: white;
   color: black;
 }
-#textAmount {
+p {
+  margin: 0;
+  padding: 0;
+}
+#check {
+  background-color: #ddeaff;
+  display: block;
+  padding: 0.5em;
+  width: 40em;
+}
+div {
+  background-color: #ddeaff;
+  border: 1px solid black;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5em;
+  padding: 0.5em;
+}
+address {
+  grid-column: 1 / 3;
+  grid-row: 1 / 3;
+  text-align: start;
+}
+time {
+  grid-column: 3 / 5;
+  grid-row: 1;
+  text-align: end;
+}
+#number {
   font-weight: bold;
-  text-decoration: underline;
+  grid-column: 5;
+  grid-row: 1;
+  text-align: end;
+}
+#payee {
+  border-bottom: 1px solid black;
+  grid-column: 1 / 5;
+  grid-row: 4;
+}
+#numericAmount {
+  border: 1px solid black;
+  grid-column: 5;
+  grid-row: 4;
+  text-align: center;
+}
+#textAmount {
+  border-bottom: 1px solid black;
+  font-weight: bold;
+  grid-column: 1 / 6;
+  grid-row: 5;
+  padding-left: 1em;
+}
+#bank {
+  grid-column: 1 / 3;
+  grid-row: 6;
+}
+#memo {
+  border-bottom: 1px solid black;
+  grid-column: 1 / 3;
+  grid-row: 7;
+}
+#signature {
+  border-bottom: 1px solid black;
+  grid-column: 4 / 6;
+  grid-row: 7;
 }
   </style>
 </head>
@@ -28,13 +90,35 @@ body {
 <button type="submit">Spell</button></p>
 </form>
 
-<p>On a check, the numeric amount would be spelled out as:</p>
+<h2>The check would look like:</h2>
 
-<p id="textAmount"></p>
+<output id="check">
+  <div>
+    <address>John Smith
+    <br>123 Main Street
+    <br>Anyplace, US 00000-0000</address>
+    <time></time>
+    <p id="number">1234</p>
+    <p id="payee">Pay to the order of</p>
+    <p id="numericAmount"></p>
+    <p id="textAmount"></p>
+    <p id="bank">Money McBank Bank</p>
+    <p id="memo">For</p>
+    <p id="signature"></p>
+  </div>
+</output>
 
 </main>
 
 <script>
+/*
+ * Array of string month names.
+ */
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
 /*
  * Map from a digit in the ones place to its text string.
  */
@@ -331,17 +415,24 @@ function test() {
 test();
 
 const form = document.querySelector('#amountForm');
-const output = document.querySelector('#textAmount');
+const numericAmount = document.querySelector('#numericAmount');
+const textAmount = document.querySelector('#textAmount');
 form.addEventListener('submit', (event) => {
   let rawAmount = form.amount.value;
   if (isValid(rawAmount)) {
-    output.textContent = numericToText(rawAmount);
+    numericAmount.textContent = rawAmount;
+    textAmount.textContent = numericToText(rawAmount);
   }
   else {
-    output.textContent = 'Amount should be digits followed by a period (.) followed by 2 digits.';
+    textAmount.textContent = 'Amount should be digits followed by a period (.) followed by 2 digits.';
   }
   event.preventDefault();
 });
+
+// Fill in today's date
+const date = document.querySelector('time');
+let today = new Date();
+date.textContent = `${ MONTHS[today.getMonth()] } ${ today.getDate() }, ${ today.getFullYear() }`;
 </script>
 </body>
 
