@@ -86,7 +86,7 @@ time {
 
 <form id="amountForm" name="amountForm" action="" method="get">
 <p><label for="amount">Numeric Amount:</label>
-<input type="text" id="amount" name="amount" autofocus required maxlength="18" minlength="4" pattern="[0-9]{1,15}[.][0-9]{2,2}" placeholder="123.45" spellcheck="false">
+<input type="text" id="amount" name="amount" autofocus required maxlength="30" minlength="4" pattern="[0-9]+[.][0-9]{2,2}" placeholder="123.45" spellcheck="false">
 <button type="submit">Spell</button></p>
 </form>
 
@@ -114,9 +114,37 @@ time {
 /*
  * Array of string month names.
  */
-const MONTHS = [
+const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+/*
+ * Array of string number names.
+ */
+const NUMBER_NAMES = [
+  '',
+  'thousand',
+  'million',
+  'billion',
+  'trillion',
+  'quadrillion',
+  'quintillion',
+  'sextillion',
+  'septillion',
+  'octillion',
+  'nonillion',
+  'decillion',
+  'undecillion',
+  'duodecillion',
+  'tredecillion',
+  'quattuordecillion',
+  'quindecillion',
+  'sexdecillion',
+  'septendecillion',
+  'octodecillion',
+  'novemdecillion',
+  'vigintillion'
 ];
 
 /*
@@ -196,111 +224,96 @@ function isValid(amount) {
  * Return a string text amount equivalent to the numeric amount in amount.
  */
 function numericToText(amount) {
-  let digits = [],
+  let [whole, fraction, ...rest] = amount.split('.'),
       result = [],
-      i = 0,
-      last = '',
-      parts, lookahead, digit, text;
+      start = 0,
+      length, triplet, text;
 
-  // Remove leading 0 but keeping it if amount is all 0 or has fractional part
-  while (amount.charAt(i) === '0') {
-    i++;
-  }
-  if (i > 0) {
-    if (i >= amount.length) {
-      amount = '0';
-    }
-    else if (amount.charAt(i) === '.') {
-      amount = '0' + amount.substring(i);
-    }
-    else {
-      amount = amount.substring(i);
-    }
-  }
-
-  parts = amount.split('.');
-  // Sanity check the parts of the numeric amount
-  console.assert(parts.length > 0, {msg: 'parts.length > 0.'});
-
-  if (parts.length > 1) {
-    // Generate the fractional part
-    text = parts[1] + '00';
-    result.push('and');
-    result.push(text.substring(0, 2) + ' / 100');
-  }
-
-  if ((parts[0].length === 1) && (parts[0][0] === '0')) {
+  // Pad the whole amount just shy of the next grouping
+  whole = whole.padStart(Math.ceil(whole.length / 3) * 3, '0');
+  length = whole.length;
+  if (whole === '0'.repeat(length)) {
     // Special case for zero
-    result.unshift('zero');
-    return result.join(' ');
+    result.push('zero');
+  }
+  else {
+    for (let i = (length / 3) - 1; i >= 0; i--) {
+      triplet = whole.slice(start, start + 3);
+      text = tripletToText(triplet);
+      if (text.length > 0) {
+        result.push(text);
+        if (i > 0) {
+          result.push(NUMBER_NAMES[i]);
+        }
+      }
+      start += 3;
+    }
   }
 
-  // Reverse the digits in the whole amount part
-  for (let c of parts[0]) {
-    digits.unshift(c);
+  if (fraction != null) {
+    // Generate the fractional part
+    fraction += '00';
+    result.push('and');
+    result.push(fraction.substring(0, 2) + ' / 100');
   }
 
-  i = 0;
-  while (digits.length > 0) {
-    if (i >= 3) {
-      lookahead = digits.slice(0, 3).join('');
-      if (lookahead != '000') {
-        // Only output if the next section is non-zero
-        if (i === 3) {
-          result.unshift('thousand');
-        }
-        else if (i === 6) {
-          result.unshift('million');
-        }
-        else if (i === 9) {
-          result.unshift('billion');
-        }
-        else if (i === 12) {
-          result.unshift('trillion');
-        }
-      }
-    }
+  return result.join(' ');
+}
 
-    digit = digits.shift();
-    if ((i % 3) === 0) {
-      text = ONES_MAP.get(digit);
-      if (text.length > 0) {
-        result.unshift(text);
-      }
+/*
+ * Return a string text amount for a triplet grouping of digits.
+ */
+function tripletToText(triplet) {
+  if (typeof triplet !== 'string') {
+    throw new TypeError('triplet must be a string.');
+  }
+  triplet = triplet.padStart(3, '0');
+
+  let hundreds = triplet.slice(-3, -2),
+      tens = triplet.slice(-2, -1),
+      ones = triplet.slice(-1),
+      result = [],
+      text;
+  if (hundreds !== '0') {
+    // If there is a value in the hundreds place
+    text = ONES_MAP.get(hundreds);
+    if ((text != null) && (text.length > 0)) {
+      result.push(text);
+      result.push('hundred');
     }
-    else if ((i % 3) === 1) {
-      if (digit === '0') {
-        text = '';
-      }
-      else if (digit === '1') {
-        text = TENS_MAP.get(digit + last);
-        if (last !== '0') {
-          // Remove the ones digit for values in the teens
-          result.shift();
-        }
-      }
-      else if (last === '0') {
-        text = TENS_MAP.get(digit);
-      }
-      else {
-        text = TENS_MAP.get(digit) + '-' + result.shift();
-      }
-      if (text.length > 0) {
-        result.unshift(text);
+  }
+  if (tens === '0') {
+    // If there is no value in the tens place
+    text = ONES_MAP.get(ones);
+    if ((text != null) && (text.length > 0)) {
+      result.push(text);
+    }
+  }
+  else if (tens === '1') {
+    // Special case for the teens
+    text = TENS_MAP.get(tens + ones);
+    if ((text != null) && (text.length > 0)) {
+      result.push(text);
+    }
+  }
+  else {
+    if (ones === '0') {
+      text = TENS_MAP.get(tens);
+      if ((text != null) && (text.length > 0)) {
+        result.push(text);
       }
     }
     else {
-      text = ONES_MAP.get(digit);
-      if (text.length > 0) {
-        result.unshift('hundred');
-        result.unshift(text);
+      text = TENS_MAP.get(tens) + '-' + ONES_MAP.get(ones);
+      if ((text != null) && (text.length > 0)) {
+        result.push(text);
       }
     }
-
-    last = digit;
-    i++;
   }
 
+  if (result.length <= 0) {
+    return '';
+  }
   return result.join(' ');
 }
 
@@ -308,11 +321,7 @@ function padNumber(value) {
   if (typeof value !== 'number') {
     throw new TypeError('value must be a positive number.');
   }
-
-  if (value < 10) {
-    return '0' + value;
-  }
-  return value.toFixed(0);
+  return value.toFixed(0).padStart(2, '0');
 }
 
 /*
@@ -374,6 +383,7 @@ function test() {
     ['28', 'twenty-eight'],
     ['29', 'twenty-nine'],
     ['30', 'thirty'],
+    ['31', 'thirty-one'],
     ['40', 'forty'],
     ['42', 'forty-two'],
     ['48', 'forty-eight'],
@@ -391,6 +401,10 @@ function test() {
     ['150', 'one hundred fifty'],
     ['365', 'three hundred sixty-five'],
     ['1000', 'one thousand'],
+    ['2000', 'two thousand'],
+    ['2010', 'two thousand ten'],
+    ['2020', 'two thousand twenty'],
+    ['3000', 'three thousand'],
     ['10000', 'ten thousand'],
     ['15000', 'fifteen thousand'],
     ['100000', 'one hundred thousand'],
@@ -402,11 +416,25 @@ function test() {
                    {msg: 'isValid() failed.'});
     console.assert(numericToText(value) === expected,
                    {msg: 'numericToText() failed.'});
+
     // Test leading 0
     console.assert(numericToText('0' + value) === expected,
                    {msg: 'numericToText() failed.'});
+    console.assert(numericToText('00' + value) === expected,
+                   {msg: 'numericToText() failed.'});
     console.assert(numericToText('000' + value) === expected,
                    {msg: 'numericToText() failed.'});
+
+    if ((value !== '0') && (value.length <= 3)) {
+      console.assert(tripletToText(value) === expected,
+                     {msg: 'tripletToText() failed.'});
+      console.assert(tripletToText('0' + value) === expected,
+                     {msg: 'tripletToText() failed.'});
+      console.assert(tripletToText('00' + value) === expected,
+                     {msg: 'tripletToText() failed.'});
+      console.assert(tripletToText('000' + value) === expected,
+                     {msg: 'tripletToText() failed.'});
+    }
 
     // Test fractional part
     for (let i = 0; i < 10; i++) {
@@ -479,7 +507,7 @@ form.addEventListener('submit', (event) => {
 // Fill in today's date
 const date = document.querySelector('time');
 let today = new Date();
-date.textContent = `${ MONTHS[today.getMonth()] } ${ today.getDate() }, ${ today.getFullYear() }`;
+date.textContent = `${ MONTH_NAMES[today.getMonth()] } ${ today.getDate() }, ${ today.getFullYear() }`;
 date.setAttribute('datetime', `${ today.getFullYear() }-${ padNumber(today.getMonth() + 1) }-${ padNumber(today.getDate()) }`);
 </script>
 </body>
