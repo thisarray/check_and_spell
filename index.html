@@ -85,8 +85,9 @@ time {
 <h1>Check and Spell</h1>
 
 <form id="amountForm" name="amountForm" action="" method="get">
-<p><label for="amount">Numeric Amount:</label>
+<p><label for="amount">Numeric Amount:
 <input type="text" id="amount" name="amount" autofocus required maxlength="30" minlength="4" pattern="[0-9]+[.][0-9]{2,2}" placeholder="123.45" spellcheck="false">
+</label>
 <button type="submit">Spell</button></p>
 </form>
 
@@ -107,7 +108,6 @@ time {
     <p id="signature"></p>
   </div>
 </output>
-
 </main>
 
 <script>
@@ -148,7 +148,7 @@ const NUMBER_NAMES = [
 ];
 
 /*
- * Map from a digit in the ones place to its text string.
+ * Map from a string digit in the ones place to its text string.
  */
 const ONES_MAP = new Map([
   ['0', ''],
@@ -164,7 +164,7 @@ const ONES_MAP = new Map([
 ]);
 
 /*
- * Map from a digit in the tens place to its text string.
+ * Map from a string digit in the tens place to its text string.
  */
 const TENS_MAP = new Map([
   ['0', ''],
@@ -321,7 +321,7 @@ function padNumber(value) {
   if (typeof value !== 'number') {
     throw new TypeError('value must be a positive number.');
   }
-  return value.toFixed(0).padStart(2, '0');
+  return value.toFixed().padStart(2, '0');
 }
 
 /*
