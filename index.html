@@ -84,8 +84,8 @@ time {
 <main>
 <h1>Check and Spell</h1>
 
-<form id="amountForm" name="amountForm" action="" method="get">
-<p><label for="amount">Numeric Amount:
+<form id="amountForm" name="amountForm">
+<p><label>Numeric Amount:
 <input type="text" id="amount" name="amount" autofocus required maxlength="30" minlength="4" pattern="[0-9]+[.][0-9]{2,2}" placeholder="123.45" spellcheck="false">
 </label>
 <button type="submit">Spell</button></p>
@@ -194,7 +194,7 @@ const TENS_MAP = new Map([
 const NUMBER_REGULAR_EXPRESSION = /^(\d+)$/;
 
 /*
- * Return if str is a length long string of digits.
+ * Return true if str is a length long string of digits.
  */
 function isNumber(str, length = -1) {
   if ((length == undefined) || (length <= 0)) {
@@ -207,7 +207,7 @@ function isNumber(str, length = -1) {
 }
 
 /*
- * Return if amount is a valid numeric amount.
+ * Return true if amount is a valid numeric amount.
  */
 function isValid(amount) {
   let i = 0;
@@ -317,6 +317,9 @@ function tripletToText(triplet) {
   return result.join(' ');
 }
 
+/*
+ * Return a string of 2 digits corresponding to value.
+ */
 function padNumber(value) {
   if (typeof value !== 'number') {
     throw new TypeError('value must be a positive number.');
@@ -486,29 +489,33 @@ function test() {
     console.assert(padNumber(value) === expected,
                    {msg: 'padNumber() failed.'});
   }
+  for (let i = 10; i < 100; i++) {
+    console.assert(padNumber(i) === i.toFixed(),
+                   {msg: 'padNumber() failed.'});
+  }
 }
 test();
 
-const form = document.querySelector('#amountForm');
-const numericAmount = document.querySelector('#numericAmount');
-const textAmount = document.querySelector('#textAmount');
-form.addEventListener('submit', (event) => {
-  let rawAmount = form.amount.value;
+const FORM = document.querySelector('#amountForm');
+const NUMERIC_AMOUNT = document.querySelector('#numericAmount');
+const TEXT_AMOUNT = document.querySelector('#textAmount');
+FORM.addEventListener('submit', (event) => {
+  let rawAmount = FORM.amount.value;
   if (isValid(rawAmount)) {
-    numericAmount.textContent = rawAmount;
-    textAmount.textContent = numericToText(rawAmount);
+    NUMERIC_AMOUNT.textContent = rawAmount;
+    TEXT_AMOUNT.textContent = numericToText(rawAmount);
   }
   else {
-    textAmount.textContent = 'Amount should be digits followed by a period (.) followed by 2 digits.';
+    TEXT_AMOUNT.textContent = 'Amount should be digits followed by a period (.) followed by 2 digits.';
   }
   event.preventDefault();
 });
 
 // Fill in today's date
-const date = document.querySelector('time');
+const TIME_TAG = document.querySelector('time');
 let today = new Date();
-date.textContent = `${ MONTH_NAMES[today.getMonth()] } ${ today.getDate() }, ${ today.getFullYear() }`;
-date.setAttribute('datetime', `${ today.getFullYear() }-${ padNumber(today.getMonth() + 1) }-${ padNumber(today.getDate()) }`);
+TIME_TAG.textContent = `${ MONTH_NAMES[today.getMonth()] } ${ today.getDate() }, ${ today.getFullYear() }`;
+TIME_TAG.setAttribute('datetime', `${ today.getFullYear() }-${ padNumber(today.getMonth() + 1) }-${ padNumber(today.getDate()) }`);
 </script>
 </body>
 
