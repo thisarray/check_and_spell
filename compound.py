@@ -186,34 +186,46 @@ class _UnitTest(unittest.TestCase):
 
     def test_get_maturity_month(self):
         """Test adjusting for different number of days in a month."""
-        self.assertEqual(_get_maturity(datetime.date(2021, 1, 28), 0, 1),
-                         datetime.date(2021, 2, 28))
-        self.assertEqual(_get_maturity(datetime.date(2021, 1, 29), 0, 1),
-                         datetime.date(2021, 3, 1))
-        self.assertEqual(_get_maturity(datetime.date(2021, 1, 30), 0, 1),
-                         datetime.date(2021, 3, 2))
-        self.assertEqual(_get_maturity(datetime.date(2021, 1, 31), 0, 1),
-                         datetime.date(2021, 3, 3))
-        self.assertEqual(_get_maturity(datetime.date(2021, 1, 28), 0, 2),
-                         datetime.date(2021, 3, 28))
-        self.assertEqual(_get_maturity(datetime.date(2021, 1, 29), 0, 2),
-                         datetime.date(2021, 3, 29))
-        self.assertEqual(_get_maturity(datetime.date(2021, 1, 30), 0, 2),
-                         datetime.date(2021, 3, 30))
-        self.assertEqual(_get_maturity(datetime.date(2021, 1, 31), 0, 2),
-                         datetime.date(2021, 3, 31))
-        self.assertEqual(_get_maturity(datetime.date(2021, 1, 28), 0, 3),
-                         datetime.date(2021, 4, 28))
-        self.assertEqual(_get_maturity(datetime.date(2021, 1, 29), 0, 3),
-                         datetime.date(2021, 4, 29))
-        self.assertEqual(_get_maturity(datetime.date(2021, 1, 30), 0, 3),
-                         datetime.date(2021, 4, 30))
-        self.assertEqual(_get_maturity(datetime.date(2021, 1, 31), 0, 3),
-                         datetime.date(2021, 5, 1))
-        self.assertEqual(_get_maturity(datetime.date(2021, 1, 28), 0, 12),
-                         datetime.date(2022, 1, 28))
-        self.assertEqual(_get_maturity(datetime.date(2021, 1, 28), 0, 13),
-                         datetime.date(2022, 2, 28))
+        for i in range(3):
+            self.assertEqual(
+                _get_maturity(datetime.date(2021, 1, 28), 0, 1 + (12 * i)),
+                datetime.date(2021 + i, 2, 28))
+            self.assertEqual(
+                _get_maturity(datetime.date(2021, 1, 29), 0, 1 + (12 * i)),
+                datetime.date(2021 + i, 3, 1))
+            self.assertEqual(
+                _get_maturity(datetime.date(2021, 1, 30), 0, 1 + (12 * i)),
+                datetime.date(2021 + i, 3, 2))
+            self.assertEqual(
+                _get_maturity(datetime.date(2021, 1, 31), 0, 1 + (12 * i)),
+                datetime.date(2021 + i, 3, 3))
+            self.assertEqual(
+                _get_maturity(datetime.date(2021, 1, 28), 0, 2 + (12 * i)),
+                datetime.date(2021 + i, 3, 28))
+            self.assertEqual(
+                _get_maturity(datetime.date(2021, 1, 29), 0, 2 + (12 * i)),
+                datetime.date(2021 + i, 3, 29))
+            self.assertEqual(
+                _get_maturity(datetime.date(2021, 1, 30), 0, 2 + (12 * i)),
+                datetime.date(2021 + i, 3, 30))
+            self.assertEqual(
+                _get_maturity(datetime.date(2021, 1, 31), 0, 2 + (12 * i)),
+                datetime.date(2021 + i, 3, 31))
+            self.assertEqual(
+                _get_maturity(datetime.date(2021, 1, 28), 0, 3 + (12 * i)),
+                datetime.date(2021 + i, 4, 28))
+            self.assertEqual(
+                _get_maturity(datetime.date(2021, 1, 29), 0, 3 + (12 * i)),
+                datetime.date(2021 + i, 4, 29))
+            self.assertEqual(
+                _get_maturity(datetime.date(2021, 1, 30), 0, 3 + (12 * i)),
+                datetime.date(2021 + i, 4, 30))
+            self.assertEqual(
+                _get_maturity(datetime.date(2021, 1, 31), 0, 3 + (12 * i)),
+                datetime.date(2021 + i, 5, 1))
+            self.assertEqual(
+                _get_maturity(datetime.date(2021, 1, 28), 0, 12 + (12 * i)),
+                datetime.date(2022 + i, 1, 28))
 
     def test_get_maturity_leap_day(self):
         """Test calculating the maturity for a Leap Day."""
