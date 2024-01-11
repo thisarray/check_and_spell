@@ -310,9 +310,10 @@ if __name__ == '__main__':
         else:
             apy = args.apy
         result = compound(args.principal, apy, today, maturity)
-        print('${:.2f} @ {:.2%} APY = ${:.2f} on {} (gain of ${:.2f})'.format(
-            args.principal, apy, result, maturity.isoformat(),
-            result - args.principal))
+        print('${:.2f} @ {:.2%} APY = ${:.2f} on {} \
+(${:.2f} in interest)'.format(
+    args.principal, apy, result, maturity.isoformat(),
+    result - args.principal))
     else:
         suite = unittest.defaultTestLoader.loadTestsFromTestCase(_UnitTest)
         unittest.TextTestRunner(verbosity=2).run(suite)

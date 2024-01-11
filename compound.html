@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compounding Interest</title>
+  <style type="text/css" media="screen">
+body {
+  background-color: white;
+  color: black;
+}
+  </style>
+</head>
+
+<body>
+
+<main>
+<h1>Compounding Interest</h1>
+
+<form id="compoundForm" name="compoundForm">
+
+<p><label>Principal:
+<input type="text" id="principal" name="principal" autofocus required maxlength="10" minlength="1" pattern="[0-9]+([.][0-9]{2,2})?" placeholder="123.45" spellcheck="false"></label></p>
+
+<p><label>Annual percentage yield (APY):
+<input type="text" id="apy" name="apy" required maxlength="5" minlength="1" pattern="[0-9]+([.][0-9]+)?" placeholder="2.0" spellcheck="false"></label></p>
+
+<p><label>Duration:
+<input type="number" id="duration" name="duration" value="6" min="3"> months</label></p>
+
+<p><button type="submit">Calculate</button></p>
+
+<output id="result"></output>
+</form>
+</main>
+
+<p>Interest is calculated by applying a daily rate calculated from the annual percentage yield (APY).</p>
+
+<script>
+/*
+ * Integer number of days in a year.
+ */
+const DAYS_IN_YEAR = 365;
+
+/*
+ * Integer number of milliseconds in a day.
+ */
+const MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
+
+/*
+ * Return a Date object that is monthCount months from today.
+ */
+function getMaturity(today, monthCount) {
+  if (typeof monthCount !== 'number') {
+    throw new TypeError('monthCount must be a non-negative integer.');
+  }
+  if (monthCount < 0) {
+    throw new RangeError('monthCount must be a non-negative integer.');
+  }
+
+  let endYear = today.getFullYear() + Math.floor(monthCount / 12),
+      endMonth = today.getMonth(),
+      endDate = today.getDate(),
+      dayCount = 0,
+      result;
+
+  monthCount = monthCount % 12;
+  endMonth += monthCount;
+  if (endMonth > 11) {
+    endYear++;
+    endMonth -= 12;
+  }
+
+  while (true) {
+    result = new Date(endYear, endMonth, endDate);
+    if ((result.getFullYear() === endYear) &&
+        (result.getMonth() === endMonth) &&
+        (result.getDate() === endDate)) {
+      // If result was created successfully, then the date is valid
+      break;
+    }
+
+    dayCount++;
+    endDate--;
+  }
+
+  if (dayCount > 0) {
+    // If there are days leftover, increment result by the leftover number of days
+    endMonth++;
+    if (endMonth > 11) {
+      endYear++;
+      endMonth -= 12;
+    }
+    result = new Date(endYear, endMonth, dayCount);
+  }
+
+  return result;
+}
+
+/*
+ * Unit tests
+ */
+function test() {
+  for (let [value, monthCount, expected] of [
+    [new Date(2020, 1, 2), 0, new Date(2020, 1, 2)],
+    [new Date(2020, 1, 2), 1, new Date(2020, 2, 2)],
+    [new Date(2020, 1, 2), 2, new Date(2020, 3, 2)],
+    [new Date(2020, 1, 2), 3, new Date(2020, 4, 2)],
+    [new Date(2020, 1, 2), 4, new Date(2020, 5, 2)],
+    [new Date(2020, 1, 2), 5, new Date(2020, 6, 2)],
+    [new Date(2020, 1, 2), 6, new Date(2020, 7, 2)],
+    [new Date(2020, 1, 2), 7, new Date(2020, 8, 2)],
+    [new Date(2020, 1, 2), 8, new Date(2020, 9, 2)],
+    [new Date(2020, 1, 2), 9, new Date(2020, 10, 2)],
+    [new Date(2020, 1, 2), 10, new Date(2020, 11, 2)],
+    [new Date(2020, 1, 2), 11, new Date(2021, 0, 2)],
+    [new Date(2020, 1, 2), 12, new Date(2021, 1, 2)],
+    [new Date(2020, 1, 2), 13, new Date(2021, 2, 2)],
+    [new Date(2021, 0, 28), 1, new Date(2021, 1, 28)],
+    [new Date(2021, 0, 29), 1, new Date(2021, 2, 1)],
+    [new Date(2021, 0, 30), 1, new Date(2021, 2, 2)],
+    [new Date(2021, 0, 31), 1, new Date(2021, 2, 3)],
+    [new Date(2021, 0, 28), 2, new Date(2021, 2, 28)],
+    [new Date(2021, 0, 29), 2, new Date(2021, 2, 29)],
+    [new Date(2021, 0, 30), 2, new Date(2021, 2, 30)],
+    [new Date(2021, 0, 31), 2, new Date(2021, 2, 31)],
+    [new Date(2021, 0, 28), 3, new Date(2021, 3, 28)],
+    [new Date(2021, 0, 29), 3, new Date(2021, 3, 29)],
+    [new Date(2021, 0, 30), 3, new Date(2021, 3, 30)],
+    [new Date(2021, 0, 31), 3, new Date(2021, 4, 1)]]) {
+    console.assert(getMaturity(value, monthCount).toISOString().substring(0, 10) === expected.toISOString().substring(0, 10),
+                   {msg: 'getMaturity() failed.'});
+  }
+}
+test();
+
+const FORM = document.querySelector('#compoundForm');
+const OUTPUT = document.querySelector('#result');
+FORM.addEventListener('submit', (event) => {
+  let principal = parseFloat(FORM.principal.value, 10),
+      apy = parseFloat(FORM.apy.value, 10) / 100,
+      today = getMaturity(new Date(), 0),
+      maturity = getMaturity(today, parseInt(FORM.duration.value, 10)),
+      // Calculate the number of days between today and maturity using milliseconds
+      dayCount = Math.floor((maturity.getTime() - today.getTime()) / MILLISECONDS_IN_DAY),
+      dailyRate, result, difference;
+
+  dailyRate = Math.pow(1.0 + apy, 1.0 / DAYS_IN_YEAR) - 1.0;
+  result = principal;
+  for (let i = 0; i < dayCount; i++) {
+    result += result * dailyRate;
+  }
+
+  result = Math.round(result * 100) / 100;
+  difference = Math.round((result - principal) * 100) / 100;
+  OUTPUT.textContent = `$${ principal } @ ${ apy * 100 }% APY = $${ result } on ${ maturity.toISOString().substring(0, 10) } ($${ difference } in interest)`;
+
+  event.preventDefault();
+});
+</script>
+</body>
+
+</html>
