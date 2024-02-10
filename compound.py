@@ -186,6 +186,31 @@ class _UnitTest(unittest.TestCase):
 
     def test_get_maturity_month(self):
         """Test adjusting for different number of days in a month."""
+        self.assertEqual(_get_maturity(datetime.date(2020, 1, 28), 0, 1),
+                         datetime.date(2020, 2, 28))
+        self.assertEqual(_get_maturity(datetime.date(2020, 1, 29), 0, 1),
+                         datetime.date(2020, 2, 29))
+        self.assertEqual(_get_maturity(datetime.date(2020, 1, 30), 0, 1),
+                         datetime.date(2020, 3, 1))
+        self.assertEqual(_get_maturity(datetime.date(2020, 1, 31), 0, 1),
+                         datetime.date(2020, 3, 2))
+        self.assertEqual(_get_maturity(datetime.date(2020, 1, 28), 0, 2),
+                         datetime.date(2020, 3, 28))
+        self.assertEqual(_get_maturity(datetime.date(2020, 1, 29), 0, 2),
+                         datetime.date(2020, 3, 29))
+        self.assertEqual(_get_maturity(datetime.date(2020, 1, 30), 0, 2),
+                         datetime.date(2020, 3, 30))
+        self.assertEqual(_get_maturity(datetime.date(2020, 1, 31), 0, 2),
+                         datetime.date(2020, 3, 31))
+        self.assertEqual(_get_maturity(datetime.date(2020, 1, 28), 0, 3),
+                         datetime.date(2020, 4, 28))
+        self.assertEqual(_get_maturity(datetime.date(2020, 1, 29), 0, 3),
+                         datetime.date(2020, 4, 29))
+        self.assertEqual(_get_maturity(datetime.date(2020, 1, 30), 0, 3),
+                         datetime.date(2020, 4, 30))
+        self.assertEqual(_get_maturity(datetime.date(2020, 1, 31), 0, 3),
+                         datetime.date(2020, 5, 1))
+
         for i in range(3):
             self.assertEqual(
                 _get_maturity(datetime.date(2021, 1, 28), 0, 1 + (12 * i)),
